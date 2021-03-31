@@ -35,7 +35,9 @@ long_description = '\n\n'.join((install, changelog))
 setup(
     name='pandapower',
 
+
     version='2.6.0',
+
 
     author='Leon Thurner, Alexander Scheidler',
     author_email='leon.thurner@iee.fraunhofer.de, alexander.scheidler@iee.fraunhofer.de',

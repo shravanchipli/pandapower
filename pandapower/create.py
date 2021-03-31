@@ -298,6 +298,7 @@ def create_empty_network(name="", f_hz=50., sn_mva=1, add_stdtypes=True):
             ('level', dtype(object)),
             ('initial_run', "bool"),
 
+
             ("recycle", dtype(object)),
 
         ],

@@ -55,30 +55,39 @@ def _call_powermodels(buffer_file, julia_file):  # pragma: no cover
     except:
         raise UserWarning(
             "Could not connect to julia, please check that Julia is installed and pyjulia is correctly configured")
-    
+        
+    # Pkg.rm("PandaModels")
+    # Pkg.resolve()
     # import two julia scripts and runs powermodels julia_file
 
     if str(type(Base.find_package("PandaModels"))) == "<class 'NoneType'>":
-        Pkg.add(path = joinpath(homedir(), ".julia", "dev", "PandaModels.jl"))#(url = "https://github.com/e2nIEE/PandaModels.jl")
-        # Pkg.build()
+        
+        Pkg.add(url = "https://github.com/e2nIEE/PandaModels.jl") 
+        
+        Pkg.develop("PandaModels")
+        Pkg.build()
         Pkg.resolve()
         
-    Pkg_path = Base.find_package("PandaModels").split(".jl")[0]
-    
-    #     try:
-    #     Pkg_path = Base.find_package("PandaModels").split(".jl")[0]
-    # except:
-    #     Pkg.add(url = "https://github.com/e2nIEE/PandaModels.jl")
-    #     Pkg.build()
-    #     Pkg.resolve()    
-     
+    # Pkg_path = Base.find_package("PandaModels").split(".jl")[0]
 
-    Pkg.activate(Pkg_path)
+    
+    # try:
+    #     Pkg_path = Base.find_package("PandaModels").split(".jl")[0]
+    #     print(Pkg_path)
+    # except:
+    #     Pkg.add(path = "C:/Users/x230/.julia/dev/PandaModels.jl")
+    #     Pkg.build()
+    #     Pkg.resolve()
+        
+    # Pkg.activate(Pkg_path)
+    Pkg.activate("PandaModels")
+    
+
     Main.using("PandaModels")
     # if not os.path.isfile(julia_file):
     #     raise UserWarning("File %s could not be imported" % julia_file)
     Main.buffer_file = buffer_file
     # exec_fun = julia_file.split("/")[-1].split(".")[0]
-    print(julia_file)
+    # print(">>>>>> julia_file: " +  julia_file)  
     result_pm = Main.eval(julia_file+"(buffer_file)")
     return result_pm
