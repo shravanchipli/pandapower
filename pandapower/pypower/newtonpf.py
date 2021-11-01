@@ -11,7 +11,7 @@
 """Solves the power flow using a full Newton's method.
 """
 
-from numpy import angle, exp, linalg, conj, r_, Inf, arange, zeros, max, zeros_like, column_stack
+from numpy import angle, exp, linalg, conj, r_, Inf, arange, zeros, max, zeros_like, column_stack, array
 from scipy.sparse.linalg import spsolve
 
 from pandapower.pf.iwamoto_multiplier import _iwamoto_step
@@ -40,6 +40,8 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, ppci, options):
     max_it = options["max_iteration"]
     numba = options["numba"]
     iwamoto = options["algorithm"] == "iwamoto_nr"
+    linesearch = options["algorithm"] == "linesearch_nr"
+    optimal_multiplier = iwamoto or linesearch
     voltage_depend_loads = options["voltage_depend_loads"]
     v_debug = options["v_debug"]
     use_umfpack = options["use_umfpack"]
@@ -55,8 +57,9 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, ppci, options):
     Va = angle(V)
     Vm = abs(V)
     dVa, dVm = None, None
-    if iwamoto:
+    if optimal_multiplier:
         dVm, dVa = zeros_like(Vm), zeros_like(Va)
+        opt_multipliers  = array([])
 
     if v_debug:
         Vm_it = Vm.copy()
@@ -99,15 +102,16 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, ppci, options):
 
         dx = -1 * spsolve(J, F, permc_spec=permc_spec, use_umfpack=use_umfpack)
         # update voltage
-        if npv and not iwamoto:
+        if npv and not optimal_multiplier:
             Va[pv] = Va[pv] + dx[j1:j2]
-        if npq and not iwamoto:
+        if npq and not optimal_multiplier:
             Va[pq] = Va[pq] + dx[j3:j4]
             Vm[pq] = Vm[pq] + dx[j5:j6]
 
         # iwamoto multiplier to increase convergence
-        if iwamoto:
-            Vm, Va = _iwamoto_step(Ybus, J, F, dx, pq, npv, npq, dVa, dVm, Vm, Va, pv, j1, j2, j3, j4, j5, j6)
+        if optimal_multiplier:
+            Vm, Va, opt_multipliers = _iwamoto_step(Ybus, Sbus, J, F, dx, pq, npv, npq, dVa, dVm, Vm, Va, pv, \
+                                                    j1, j2, j3, j4, j5, j6, opt_multipliers, linesearch)
 
         V = Vm * exp(1j * Va)
         Vm = abs(V)  # update Vm and Va again in case
@@ -124,7 +128,7 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, ppci, options):
 
         converged = _check_for_convergence(F, tol)
 
-    return V, converged, i, J, Vm_it, Va_it
+    return V, converged, i, J, Vm_it, Va_it, opt_multipliers
 
 
 def _evaluate_Fx(Ybus, V, Sbus, pv, pq):

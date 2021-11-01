@@ -128,12 +128,12 @@ def _run_ac_pf_without_qlims_enforced(ppci, options):
 
     # run the newton power flow
     newton = newton_ls if lightsim2grid_available and options["lightsim2grid"] else newtonpf
-    V, success, iterations, J, Vm_it, Va_it = newton(Ybus, Sbus, V0, pv, pq, ppci, options)
+    V, success, iterations, J, Vm_it, Va_it, opt_multipliers = newton(Ybus, Sbus, V0, pv, pq, ppci, options)
 
     # keep "internal" variables in  memory / net["_ppc"]["internal"] -> needed for recycle.
     ppci = _store_internal(ppci, {"J": J, "Vm_it": Vm_it, "Va_it": Va_it, "bus": bus, "gen": gen, "branch": branch,
                                   "baseMVA": baseMVA, "V": V, "pv": pv, "pq": pq, "ref": ref, "Sbus": Sbus,
-                                  "ref_gens": ref_gens, "Ybus": Ybus, "Yf": Yf, "Yt": Yt})
+                                  "ref_gens": ref_gens, "Ybus": Ybus, "Yf": Yf, "Yt": Yt, "opt_mul": opt_multipliers})
 
     return ppci, success, iterations
 

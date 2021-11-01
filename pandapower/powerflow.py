@@ -149,7 +149,7 @@ def _run_pf_algorithm(ppci, options, **kwargs):
             result = _bypass_pf_and_set_results(ppci, options)
         elif algorithm == 'bfsw':  # forward/backward sweep power flow algorithm
             result = _run_bfswpf(ppci, options, **kwargs)[0]
-        elif algorithm in ['nr', 'iwamoto_nr']:
+        elif algorithm in ['nr', 'iwamoto_nr', 'linesearch_nr']:
             result = _run_newton_raphson_pf(ppci, options)
         elif algorithm in ['fdbx', 'fdxb', 'gs']:  # algorithms existing within pypower
             result = _runpf_pypower(ppci, options, **kwargs)[0]
