@@ -57,9 +57,9 @@ def newtonpf(Ybus, Sbus, V0, pv, pq, ppci, options):
     Va = angle(V)
     Vm = abs(V)
     dVa, dVm = None, None
+    opt_multipliers = array([])
     if optimal_multiplier:
         dVm, dVa = zeros_like(Vm), zeros_like(Va)
-        opt_multipliers  = array([])
 
     if v_debug:
         Vm_it = Vm.copy()

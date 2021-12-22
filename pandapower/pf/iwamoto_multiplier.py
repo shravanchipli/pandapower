@@ -14,7 +14,7 @@ def _iwamoto_step(Ybus, Sbus, J, F, dx, pq, npv, npq, dVa, dVm, Vm, Va, pv, j1, 
         opt_multiplier = line_search(Va, Vm, dVa, dVm, Ybus, Sbus, pv, pq)
     else:
         opt_multiplier = _get_iwamoto_multiplier(Ybus, J, F, dV, dx, pq, pv)
-
+    print("optimal multiplier:", opt_multiplier)
     opt_multipliers = append(opt_multipliers, opt_multiplier)
 
     Vm += opt_multiplier * dVm
@@ -55,8 +55,9 @@ def line_search(Va, Vm, dVa, dVm, Ybus, Sbus, pv, pq):
     a = 0
     b = 1
     tol = 1.0
+    i = 0
 
-    while tol > 10e-8:
+    while tol > 10e-8 and i < 200:
 
         midpoint = a + (b - a)/2
 
@@ -84,7 +85,11 @@ def line_search(Va, Vm, dVa, dVm, Ybus, Sbus, pv, pq):
         if C1 > C2:
             a = (midpoint - a)/2
         else:
-            b = midpoint
+            if C3 > C1:
+                b = midpoint
+            else:
+                a = midpoint
+            continue
 
         if C3 > C2:
             b = midpoint + (b - midpoint)/2
@@ -92,6 +97,7 @@ def line_search(Va, Vm, dVa, dVm, Ybus, Sbus, pv, pq):
             a = midpoint 
 
         tol = abs(b - a)
+        i += 1
 
     return midpoint
         
